@@ -1,0 +1,46 @@
+{
+  "hash": "fbddf840",
+  "configHash": "abe72b8a",
+  "lockfileHash": "a8534960",
+  "browserHash": "6801e07a",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "6daae9f1",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "c56d89fa",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "fc869736",
+      "needsInterop": true
+    },
+    "d3": {
+      "src": "../../node_modules/d3/src/index.js",
+      "file": "d3.js",
+      "fileHash": "c95e0476",
+      "needsInterop": false
+    },
+    "topojson-client": {
+      "src": "../../node_modules/topojson-client/src/index.js",
+      "file": "topojson-client.js",
+      "fileHash": "23f14869",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-62IMSUQ4": {
+      "file": "chunk-62IMSUQ4.js"
+    },
+    "chunk-BUSYA2B4": {
+      "file": "chunk-BUSYA2B4.js"
+    }
+  }
+}
