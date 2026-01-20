@@ -41,7 +41,7 @@ const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'Central African Rep.': 'Central African Republic',
   'S. Sudan': 'South Sudan',
   'Dem. Rep. Congo': 'Democratic Republic of the Congo',
-  'Congo': 'Congo',
+  'Congo': 'Republic of the Congo',
   'Eq. Guin.': 'Equatorial Guinea',
   'Eq. Guinea': 'Equatorial Guinea',
   'Vatican': 'Vatican City',

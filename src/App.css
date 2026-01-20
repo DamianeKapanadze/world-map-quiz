@@ -430,6 +430,17 @@ input::placeholder {
   pointer-events: auto;
 }
 
+.tooltip-text a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.tooltip-text a:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
 /* Show Tooltip on Hover */
 .disclaimer-wrapper:hover .tooltip-text {
   visibility: visible;

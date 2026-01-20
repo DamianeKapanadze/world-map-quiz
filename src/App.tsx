@@ -28,7 +28,7 @@ function App() {
     'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil',
     'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cambodia', 'Canada',
     'Cabo Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia',
-    'Comoros', 'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
+    'Comoros', 'Republic of the Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic',
     'Democratic Republic of the Congo', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
     'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia',
     'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana',
@@ -96,6 +96,7 @@ function App() {
       }
       if (country === 'Republic of the Congo') {
         aliases['republicofcongo'] = country;
+        aliases['congo'] = country;
       }
       if (country === 'Democratic Republic of the Congo') {
         aliases['drc'] = country;
