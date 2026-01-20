@@ -50,11 +50,35 @@ h1 span {
   padding: 1rem;
   display: flex;
   gap: 15px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   background-color: var(--bg-color);
   border-top: 1px solid var(--land-border);
+  position: relative;
+}
+
+.controls-left {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.controls-main {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.credits-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 input {
@@ -253,49 +277,57 @@ input::placeholder {
   background-color: rgba(239, 68, 68, 0.2);
 }
 
-/* Footer and Credits */
-.footer {
-  padding: 1rem;
-  text-align: center;
-  border-top: 1px solid var(--land-border);
-  background-color: var(--bg-color);
-  font-size: 0.85rem;
+.separator {
+  color: var(--text-muted);
 }
 
 .credits-toggle {
-  background: none;
-  border: none;
-  color: var(--accent-blue);
-  text-decoration: underline;
+  background: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+  color: #000000;
   cursor: pointer;
   font-size: 0.85rem;
-  padding: 0;
-  transition: color 0.2s;
+  padding: 12px 16px;
+  transition: all 0.2s;
   font-weight: 500;
+  white-space: nowrap;
+  border-radius: 8px;
+  text-decoration: none;
 }
 
 .credits-toggle:hover {
-  color: #93c5fd;
+  background: #60a5fa;
+  border-color: #60a5fa;
+  color: #000000;
+}
+
+.credits-toggle:active {
+  background-color: rgba(96, 165, 250, 0.8);
 }
 
 .credits-content {
-  margin-top: 1rem;
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 0.5rem;
   padding: 1rem;
-  background-color: rgba(96, 165, 250, 0.05);
+  background-color: rgba(24, 24, 28, 0.98);
   border-radius: 8px;
   border: 1px solid var(--land-border);
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 500px;
+  width: max-content;
   text-align: left;
   font-size: 0.8rem;
   animation: slideDown 0.3s ease-out;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+  pointer-events: auto;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -327,4 +359,92 @@ input::placeholder {
 .credits-section a:hover {
   color: #93c5fd;
   text-decoration: underline;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+  text-align: center;
+  color: #71717a; /* Zinc-500 */
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.footer .author {
+  color: #e4e4e7; /* Zinc-200 */
+  font-weight: 500;
+}
+
+.separator {
+  margin: 0 0.75rem;
+  opacity: 0.3;
+}
+
+/* Disclaimer & Tooltip Container */
+.disclaimer-wrapper {
+  position: relative; /* Needed for tooltip positioning */
+  cursor: help;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.2s;
+}
+
+.disclaimer-wrapper:hover {
+  color: #60a5fa; /* Vibe Blue on hover */
+}
+
+.info-icon svg {
+  display: block; /* Removes extra line-height space */
+  transform: translateY(1px);
+}
+
+/* The Tooltip Popup */
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 300px;
+  background-color: #18181b; /* Dark Zinc background */
+  color: #fff;
+  text-align: left;
+  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid #3f3f46; /* Subtle border */
+  
+  /* Positioning */
+  position: absolute;
+  bottom: 140%; /* Move it above the text */
+  left: 0;
+  transform: translateX(-20px) translateY(5px);
+  z-index: 10;
+  
+  /* Typography */
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: normal;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  
+  /* Animation */
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: auto;
+}
+
+/* Show Tooltip on Hover */
+.disclaimer-wrapper:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-20px) translateY(0);
+}
+
+/* Optional: Add a tiny arrow at the bottom of the tooltip */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 30px;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #3f3f46 transparent transparent transparent; /* Matches border color */
 }

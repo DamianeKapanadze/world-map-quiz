@@ -15,7 +15,10 @@ function App() {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [showMapDataTooltip, setShowMapDataTooltip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mapDataTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const creditsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // List of all valid countries (197 countries)
   const allCountries = [
@@ -72,6 +75,27 @@ function App() {
       if (country === 'United Arab Emirates') {
         aliases['uae'] = country;
         aliases['emirates'] = country;
+      }
+      if (country === 'Czech Republic') {
+        aliases['czechia'] = country;
+      }
+      if (country === 'North Macedonia') {
+        aliases['macedonia'] = country;
+      }
+      if (country === 'Saint Kitts and Nevis') {
+        aliases['stkittsandnevis'] = country;
+      }
+      if (country === 'Saint Lucia') {
+        aliases['stlucia'] = country;
+      }
+      if (country === 'Saint Vincent and the Grenadines') {
+        aliases['stvincentandthegrenadines'] = country;
+      }
+      if (country === 'Central African Republic') {
+        aliases['car'] = country;
+      }
+      if (country === 'Republic of the Congo') {
+        aliases['republicofcongo'] = country;
       }
       if (country === 'Democratic Republic of the Congo') {
         aliases['drc'] = country;
@@ -198,88 +222,134 @@ function App() {
       </div>
 
       <div className="game-controls">
-        {!gameStarted ? (
-          <button 
-            className="start-btn"
-            onClick={handleStartGame}
-            title="Start the game"
+        <div className="controls-left">
+          <span 
+            className="disclaimer-wrapper"
+            onMouseEnter={() => {
+              if (mapDataTimeoutRef.current) {
+                clearTimeout(mapDataTimeoutRef.current);
+              }
+              setShowMapDataTooltip(true);
+            }}
+            onMouseLeave={() => {
+              mapDataTimeoutRef.current = setTimeout(() => {
+                setShowMapDataTooltip(false);
+              }, 250);
+            }}
           >
-            Start Game
-          </button>
-        ) : gameEnded ? (
-          <button 
-            className="start-btn"
-            onClick={handleStartGame}
-            title="Start a new game"
-          >
-            Start New Game
-          </button>
-        ) : (
-          <>
-            <input 
-              ref={inputRef}
-              type="text" 
-              placeholder="Enter a country..." 
-              value={input}
-              onChange={(e) => handleInputChange(e.target.value)}
-              autoFocus
-            />
+            <span>Map Data</span>
+            <span className="info-icon" aria-label="About the data">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </span>
+            <span className="tooltip-text" style={{ visibility: showMapDataTooltip ? 'visible' : 'hidden', opacity: showMapDataTooltip ? 1 : 0 }}>
+              Based on the standard 197 sovereign states (UN + observers + de facto). <br/>
+              Map data by <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noreferrer">World Atlas</a>.
+            </span>
+          </span>
+        </div>
+        <div className="controls-main">
+          {!gameStarted ? (
             <button 
-              className="give-up-btn"
-              onClick={handleGiveUp}
-              title="Reveal all remaining countries"
+              className="start-btn"
+              onClick={handleStartGame}
+              title="Start the game"
             >
-              Give Up
+              Start Game
             </button>
-          </>
-        )}
-        <div className="guess-counter">({guessCount}/{allCountries.length})</div>
-      </div>
-
-      <footer className="footer">
-        <button 
-          className="credits-toggle"
-          onClick={() => setShowCredits(!showCredits)}
-          title="View credits"
+          ) : gameEnded ? (
+            <button 
+              className="start-btn"
+              onClick={handleStartGame}
+              title="Start a new game"
+            >
+              Start New Game
+            </button>
+          ) : (
+            <>
+              <input 
+                ref={inputRef}
+                type="text" 
+                placeholder="Enter a country..." 
+                value={input}
+                onChange={(e) => handleInputChange(e.target.value)}
+                autoFocus
+              />
+              <button 
+                className="give-up-btn"
+                onClick={handleGiveUp}
+                title="Reveal all remaining countries"
+              >
+                Give Up
+              </button>
+            </>
+          )}
+          <div className="guess-counter">({guessCount}/{allCountries.length})</div>
+        </div>
+        <div 
+          className="credits-wrapper"
+          onMouseEnter={() => {
+            if (creditsTimeoutRef.current) {
+              clearTimeout(creditsTimeoutRef.current);
+            }
+            setShowCredits(true);
+          }}
+          onMouseLeave={() => {
+            creditsTimeoutRef.current = setTimeout(() => {
+              setShowCredits(false);
+            }, 300);
+          }}
         >
-          Credits
-        </button>
-        
-        {showCredits && (
-          <div className="credits-content">
-            <p className="credits-section">
-              <strong>Inspiration:</strong>
-              <a href="https://travle.earth/" target="_blank" rel="noopener noreferrer">Travle.earth</a>
-              <a href="https://www.sporcle.com/games/g/world" target="_blank" rel="noopener noreferrer">Sporcle World Geography</a>
-            </p>
-            
-            <p className="credits-section">
-              <strong>Tutorials:</strong>
-              <a href="https://www.youtube.com/watch?v=9ZB1EgaJnBU" target="_blank" rel="noopener noreferrer">Curran Kelleher - D3.js</a>
-            </p>
-            
-            <p className="credits-section">
-              <strong>Built with:</strong>
-              <a href="https://d3js.org" target="_blank" rel="noopener noreferrer">D3.js</a>
-              <a href="https://react.dev" target="_blank" rel="noopener noreferrer">React</a>
-              <a href="https://vitejs.dev" target="_blank" rel="noopener noreferrer">Vite</a>
-              <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener noreferrer">world-atlas</a>
-            </p>
-            
-            <p className="credits-section">
-              <strong>AI Assistance:</strong>
-              Gemini • GitHub Copilot
-            </p>
-            
-            <p className="credits-section">
-              <strong>Creator:</strong>
-              Damiane Kapanadze •
-              <a href="https://lowinertia.com/portfolio/damiane" target="_blank" rel="noopener noreferrer">Portfolio</a>
-              <a href="https://www.linkedin.com/in/damianekapanadze/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-            </p>
-          </div>
-        )}
-      </footer>
+          <button 
+            className="credits-toggle"
+            title="View credits"
+          >
+            Credits
+          </button>
+          {showCredits && (
+            <div className="credits-content">
+              <p className="credits-section">
+                <strong>Inspiration:</strong>
+                <a href="https://travle.earth/" target="_blank" rel="noopener noreferrer">Travle.earth</a>
+                <a href="https://www.sporcle.com/games/g/world" target="_blank" rel="noopener noreferrer">Sporcle World Geography</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Tutorials:</strong>
+                <a href="https://www.youtube.com/watch?v=9ZB1EgaJnBU" target="_blank" rel="noopener noreferrer">Curran Kelleher - D3.js</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Built with:</strong>
+                <a href="https://d3js.org" target="_blank" rel="noopener noreferrer">D3.js</a>
+                <a href="https://react.dev" target="_blank" rel="noopener noreferrer">React</a>
+                <a href="https://vitejs.dev" target="_blank" rel="noopener noreferrer">Vite</a>
+                <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener noreferrer">world-atlas</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>AI Assistance:</strong>
+                Gemini • GitHub Copilot
+              </p>
+              
+              <p className="credits-section">
+                <strong>Creator:</strong>
+                Damiane Kapanadze <a></a>
+                <a href="https://lowinertia.com/portfolio/damiane" target="_blank" rel="noopener noreferrer">Portfolio</a>
+                <a href="https://www.linkedin.com/in/damianekapanadze/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Source Code:</strong>
+                <a href="https://github.com/DamianeKapanadze/world-map-quiz" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

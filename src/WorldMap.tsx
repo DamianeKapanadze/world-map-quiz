@@ -43,6 +43,8 @@ const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'Dem. Rep. Congo': 'Democratic Republic of the Congo',
   'Congo': 'Congo',
   'Eq. Guin.': 'Equatorial Guinea',
+  'Eq. Guinea': 'Equatorial Guinea',
+  'Vatican': 'Vatican City',
   'São Tomé and Príncipe': 'São Tomé and Príncipe',
   'Sao Tome and Principe': 'São Tomé and Príncipe',
   'Eswatini': 'Eswatini',
@@ -133,7 +135,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
 
     // Add zoom behavior with infinite zoom and 80% default scale
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, Infinity])
+      .scaleExtent([0.7, 1000])
       .on('zoom', (event) => {
         // 1. Move everything normally so positions stay locked
         g.attr('transform', event.transform);
@@ -149,7 +151,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
           
         // Resize text
         gFixed.selectAll('text.country-label')
-          .attr('font-size', `${0.7 / scale}rem`);
+          .attr('font-size', `${0.7 / scale}rem`)
+          .attr('stroke-width', `${0.25 / scale}rem`);
       });
 
     zoomRef.current = zoom;
@@ -254,8 +257,10 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
       })
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#000000')
-      // REMOVED: .attr('transform', ...)
+      .attr('fill', '#ffffff')
+      .attr('stroke', '#000000')
+      .attr('stroke-width', `${0.2 / currentScaleRef.current}rem`) // Scale stroke with zoom
+      .style('paint-order', 'stroke fill')
       .attr('font-size', `${0.7 / currentScaleRef.current}rem`) // Set font size based on zoom
       .attr('font-weight', 'bold')
       .attr('pointer-events', 'none')
@@ -263,7 +268,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
         const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
         return mappedName;
       })
-      .style('text-shadow', '0 0 3px rgba(255,255,255,0.8)');
+      .style('text-shadow', '0 0 4px rgba(0,0,0,0.8)');
 
     // Territories (Greenland, Antarctica, etc.)
     g.selectAll('path.territory')
@@ -403,7 +408,11 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
       })
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#000000')
+      .attr('fill', '#000000') // Fill Black
+      .attr('stroke', '#ffffff') // Stroke White
+      .attr('stroke-width', `${0.25 / currentScaleRef.current}rem`) // Halo thickness
+      .style('paint-order', 'stroke fill') // Draw behind
+      // ------------------------------
       // REMOVED: .attr('transform', ...)
       .attr('font-size', `${0.7 / currentScaleRef.current}rem`)
       .attr('font-weight', 'bold')
