@@ -69,6 +69,10 @@ function App() {
         aliases['usa'] = country;
         aliases['america'] = country;
       }
+      if (country === 'United Arab Emirates') {
+        aliases['uae'] = country;
+        aliases['emirates'] = country;
+      }
       if (country === 'Democratic Republic of the Congo') {
         aliases['drc'] = country;
         aliases['congkinshasa'] = country;
