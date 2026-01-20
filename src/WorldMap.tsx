@@ -53,16 +53,7 @@ const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'Guadeloupe': 'Guadeloupe',
 };
 
-// Zoom adjustment factors for countries that need special handling
-const ZOOM_ADJUSTMENTS: { [key: string]: number } = {
-  'New Zealand': 1.5,
-  'United States of America': 1.5,
-  'Fiji': 1.5,
-  'Australia': 1.3,
-  'Canada': 1.3,
-  'Russia': 1.3,
-  'Greenland': 1.5,
-};
+
 
 // Position adjustments for labels and dots (dx, dy in pixels)
 const POSITION_ADJUSTMENTS: { [key: string]: [number, number] } = {
