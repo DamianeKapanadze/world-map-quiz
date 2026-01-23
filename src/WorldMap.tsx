@@ -72,6 +72,7 @@ const POSITION_ADJUSTMENTS: { [key: string]: [number, number] } = {
   'Haiti': [2, -2],
   'Dominican Republic': [0, 2],
   'Guyana': [0, -5],
+  'Kiribati': [-533, -5],  // Move to Central Pacific Ocean near Samoa
 };
 
 const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, revealedCountries = [] }) => {
@@ -135,7 +136,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
 
     // Add zoom behavior with infinite zoom and 80% default scale
     const zoom = d3.zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.7, 1000])
+      .scaleExtent([0.7, 4000])
       .on('zoom', (event) => {
         // 1. Move everything normally so positions stay locked
         g.attr('transform', event.transform);
