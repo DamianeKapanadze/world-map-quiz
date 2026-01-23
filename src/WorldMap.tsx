@@ -13,6 +13,8 @@ interface WorldMapProps {
   guessedCountries: { [countryName: string]: boolean };
   validCountries: string[];
   revealedCountries?: string[];
+  focusedCountry: string | null; 
+  hoveredCountry: string | null; 
 }
 
 // Territories that aren't sovereign countries
@@ -75,7 +77,14 @@ const POSITION_ADJUSTMENTS: { [key: string]: [number, number] } = {
   'Kiribati': [-533, -5],  // Move to Central Pacific Ocean near Samoa
 };
 
-const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, revealedCountries = [] }) => {
+const WorldMap: React.FC<WorldMapProps> = ({ 
+  guessedCountries, 
+  validCountries, 
+  revealedCountries = [],
+  focusedCountry,
+  hoveredCountry
+}) => {
+
   const svgRef = useRef<SVGSVGElement>(null);
   const [mapData, setMapData] = useState<MapData | null>(null);
   const [dimensions, setDimensions] = useState({ width: 960, height: 500 });
@@ -425,6 +434,83 @@ const WorldMap: React.FC<WorldMapProps> = ({ guessedCountries, validCountries, r
       .style('text-shadow', '0 0 3px rgba(255,255,255,0.8)');
   }, [guessedCountries, mapData]);
 
+
+  // Effect: Smoothly zoom and pan to the focused country
+  useEffect(() => {
+    if (!focusedCountry || !mapData || !svgRef.current || !zoomRef.current || !projectionRef.current) return;
+
+    // 1. Find the country feature in the data
+    const feature = mapData.countries.features.find((f: any) => {
+      const name = f.properties.name;
+      const mappedName = TERRITORY_NAME_MAP[name] || name;
+      return mappedName === focusedCountry;
+    });
+
+    if (!feature) return;
+
+    // 2. Calculate the target center using your existing red dot logic
+    const pathGenerator = d3.geoPath().projection(projectionRef.current);
+    const centroid = pathGenerator.centroid(feature);
+    const adjustment = POSITION_ADJUSTMENTS[focusedCountry] || [0, 0];
+    const centerX = centroid[0] + adjustment[0];
+    const centerY = centroid[1] + adjustment[1];
+
+    // 3. Determine target zoom level based on country size
+    const bounds = pathGenerator.bounds(feature);
+    const dx = bounds[1][0] - bounds[0][0];
+    const dy = bounds[1][1] - bounds[0][1];
+    const { width, height } = dimensions;
+
+    // Adaptive Zoom Math:
+    // For big countries (Russia/Canada), we want them to take up ~40% of the screen.
+    // For tiny countries (Vatican/Andorra), we want to zoom in MUCH more.
+    const area = dx * dy;
+    let paddingFactor = 0.4; // Default: country takes up 40% of screen
+    
+    if (area < 0.5) { 
+      // This is a "microstate" trigger (Vatican, Monaco, etc.)
+      paddingFactor = 0.02; // Zoom in until the country is a tiny speck in a massive view
+    } else if (area < 5) {
+      // Small countries (Andorra, Singapore)
+      paddingFactor = 0.1;
+    }
+
+    const autoScale = paddingFactor / Math.max(dx / width, dy / height);
+    
+    // Cap the zoom: 
+    // Min 1.5x (so big countries don't feel too cramped)
+    // Max 60x (so tiny countries are actually visible, but we don't hit the math limit)
+    const targetScale = Math.max(1.5, Math.min(60, autoScale));
+
+    // 4. Trigger the D3 transition
+    const svg = d3.select(svgRef.current);
+    svg.transition()
+      .duration(800)
+      .ease(d3.easeCubicInOut)
+      .call(
+        zoomRef.current.transform,
+        d3.zoomIdentity
+          .translate(width / 2 - targetScale * centerX, height / 2 - targetScale * centerY)
+          .scale(targetScale)
+      );
+  }, [focusedCountry, mapData, dimensions]);
+
+  // Effect: Highlight country when hovered in the list
+  useEffect(() => {
+    // 1. Clear any existing highlights first
+    d3.selectAll('.country').classed('list-hovered', false);
+
+    if (!hoveredCountry || !mapData) return;
+
+    // 2. Find the path that matches the hovered name
+    d3.selectAll('.country').filter((d: any) => {
+      const name = d.properties.name;
+      const mappedName = TERRITORY_NAME_MAP[name] || name;
+      return mappedName === hoveredCountry;
+    }).classed('list-hovered', true);
+    
+  }, [hoveredCountry, mapData]);
+  
   const handleZoomIn = () => {
     if (!svgRef.current || !zoomRef.current) return;
     const svg = d3.select(svgRef.current);

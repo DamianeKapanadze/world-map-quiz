@@ -16,7 +16,9 @@ function App() {
   const [gameEnded, setGameEnded] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [showMapDataTooltip, setShowMapDataTooltip] = useState(false);
+  const [focusedCountry, setFocusedCountry] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const mapDataTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const creditsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
@@ -196,7 +198,7 @@ function App() {
       
       <div className="main-content">
         <div className="map-container" onClick={() => inputRef.current?.focus()}>
-          <WorldMap guessedCountries={guessedCountries} validCountries={allCountries} revealedCountries={revealedCountries} />
+          <WorldMap guessedCountries={guessedCountries} validCountries={allCountries} revealedCountries={revealedCountries} focusedCountry={focusedCountry} hoveredCountry={hoveredCountry}/>
         </div>
         
         <div className="debug-panel">
@@ -206,7 +208,10 @@ function App() {
             {guessedOrder.map((country, index) => (
               <div 
                 key={country} 
-                className="country-item"
+                className="country-item learning-item" // Added learning-item class
+                onClick={() => setFocusedCountry(country)} // Added click handler
+                onMouseEnter={() => setHoveredCountry(country)}
+                onMouseLeave={() => setHoveredCountry(null)}
                 style={{
                   color: revealedCountries.includes(country) ? '#ef4444' : 'inherit',
                   fontWeight: revealedCountries.includes(country) ? 'bold' : 'normal'

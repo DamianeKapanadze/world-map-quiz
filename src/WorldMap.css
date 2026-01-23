@@ -68,3 +68,9 @@
     font-size: 1rem;
   }
 }
+
+/* When hovering over the name in the list, darken the map shape */
+.country.list-hovered {
+  filter: brightness(0.7) saturate(1.2);
+  transition: filter 0.2s ease, stroke 0.2s ease;
+}
