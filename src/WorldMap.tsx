@@ -75,6 +75,7 @@ const POSITION_ADJUSTMENTS: { [key: string]: [number, number] } = {
   'Dominican Republic': [0, 2],
   'Guyana': [0, -5],
   'Kiribati': [-533, -5],  // Move to Central Pacific Ocean near Samoa
+  'Fiji': [67, 0],
 };
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
