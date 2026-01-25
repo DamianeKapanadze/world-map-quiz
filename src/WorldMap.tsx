@@ -34,6 +34,8 @@ const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'Antigua and Barb.': 'Antigua and Barbuda',
   'St. Kitts and Nevis': 'Saint Kitts and Nevis',
   'St. Vin. and Gren.': 'Saint Vincent and the Grenadines',
+  'St Vincent and Grenadines': 'Saint Vincent and the Grenadines',
+  'St Vincent and the Grenadines': 'Saint Vincent and the Grenadines',
   'W. Sahara': 'Western Sahara',
   'Côte d\'Ivoire': 'Côte d\'Ivoire',
   'Ivory Coast': 'Côte d\'Ivoire',
@@ -270,10 +272,10 @@ const WorldMap: React.FC<WorldMapProps> = ({
         return centroid[1] + adjustment[1];
       });
 
-    // C. Update Labels
+    // C. Update Labels (show both guessed and revealed countries)
     const labelsData = mapData.countries.features.filter((f: any) => {
       const mappedName = TERRITORY_NAME_MAP[f.properties.name] || f.properties.name;
-      return guessedCountries[mappedName];
+      return guessedCountries[mappedName] || revealedCountries.includes(mappedName);
     });
 
     const labels = gFixedRef.current.selectAll<SVGTextElement, any>('text.country-label')
@@ -284,15 +286,9 @@ const WorldMap: React.FC<WorldMapProps> = ({
       .attr('class', 'country-label')
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#ffffff')
-      .attr('stroke', '#000000')
       .attr('font-weight', 'bold')
       .attr('pointer-events', 'none')
-      .style('paint-order', 'stroke fill')
       .merge(labels)
-      .attr('font-size', `${0.7 / currentScaleRef.current}rem`)
-      .attr('stroke-width', `${0.25 / currentScaleRef.current}rem`)
-      .text((d: any) => TERRITORY_NAME_MAP[d.properties.name] || d.properties.name)
       .attr('x', (d: any) => {
         const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
         const centroid = pathGenerator.centroid(d);
@@ -304,7 +300,25 @@ const WorldMap: React.FC<WorldMapProps> = ({
         const centroid = pathGenerator.centroid(d);
         const adjustment = POSITION_ADJUSTMENTS[mappedName] || [0, 0];
         return centroid[1] + adjustment[1];
-      });
+      })
+      .attr('fill', (d: any) => {
+        const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
+        // Red text for revealed countries, white for guessed
+        return revealedCountries.includes(mappedName) ? '#ff4444' : '#ffffff';
+      })
+      .attr('stroke', (d: any) => {
+        const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
+        // Black stroke for guessed, dark red for revealed
+        return revealedCountries.includes(mappedName) ? '#660000' : '#000000';
+      })
+      .attr('stroke-width', `${0.2 / currentScaleRef.current}rem`)
+      .style('paint-order', 'stroke fill')
+      .attr('font-size', `${0.7 / currentScaleRef.current}rem`)
+      .text((d: any) => {
+        const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
+        return mappedName;
+      })
+      .style('text-shadow', '0 0 4px rgba(0,0,0,0.8)');
 
   }, [guessedCountries, validCountries, revealedCountries, mapData]);
 
