@@ -18,8 +18,7 @@ interface WorldMapProps {
 }
 
 // Territories that aren't sovereign countries
-const TERRITORIES = new Set(['Greenland', 'Antarctica', 'French Guiana', 'Puerto Rico', 'Guam', 'Réunion', 'Martinique', 'Guadeloupe', 'Aruba', 'Curaçao', 'Saint Martin', 'Sint Maarten', 'Sao Tome and Principe']);
-
+const TERRITORIES = new Set(['Greenland', 'Antarctica', 'French Guiana', 'Puerto Rico', 'Guam', 'Réunion', 'Martinique', 'Guadeloupe', 'Aruba', 'Curaçao', 'Saint Martin', 'Sint Maarten']);
 // Map world-atlas names to our game names
 const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'St. Martin': 'Saint Martin',
@@ -47,8 +46,8 @@ const TERRITORY_NAME_MAP: { [key: string]: string } = {
   'Eq. Guin.': 'Equatorial Guinea',
   'Eq. Guinea': 'Equatorial Guinea',
   'Vatican': 'Vatican City',
-  'São Tomé and Príncipe': 'São Tomé and Príncipe',
-  'Sao Tome and Principe': 'São Tomé and Príncipe',
+  'São Tomé and Principe': 'Sao Tome and Principe', // Exact match from your logs
+  'São Tomé and Príncipe': 'Sao Tome and Principe', // Fallback
   'Eswatini': 'Eswatini',
   'eSwatini': 'Eswatini',
   'Fr. Guiana': 'French Guiana',
@@ -100,6 +99,16 @@ const WorldMap: React.FC<WorldMapProps> = ({
   useEffect(() => {
     d3.json('https://unpkg.com/world-atlas@2.0.2/countries-50m.json').then((data: any) => {
       const countries = topojson.feature(data, data.objects.countries) as unknown as FeatureCollection<GeometryObject, { name: string }>;
+      
+      // --- FIX TUVALU ---
+      // Tuvalu has ID "798" but name is undefined in this dataset. We manually fix it here.
+      countries.features.forEach((feature: any) => {
+        if (!feature.properties.name && feature.id === '798') {
+          feature.properties.name = 'Tuvalu';
+        }
+      });
+      // ------------------
+
       const land = topojson.feature(data, data.objects.land) as unknown as FeatureCollection<GeometryObject, any>;
       setMapData({ countries, land });
     });
