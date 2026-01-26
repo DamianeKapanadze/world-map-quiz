@@ -28,15 +28,88 @@ body {
   box-sizing: border-box;
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 1rem;
+  gap: 1rem;
+}
+
 h1 {
   font-weight: 700;
-  margin: 0.5rem 0 0.5rem  0;
-  padding: 0 1rem;
+  margin: 0.5rem 0 0.5rem 0;
+  padding: 0;
   font-size: 1.8rem;
+  flex: 1;
+  text-align: center;
 }
 
 h1 span {
   color: var(--accent-blue);
+}
+
+.mode-toggle-btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  background: var(--accent-blue);
+  color: var(--bg-color);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 2rem;
+}
+
+.mode-toggle-btn:hover {
+  opacity: 0.8;
+}
+
+.hard-mode-btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--text-main);
+  border: 2px solid var(--land-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.hard-mode-btn:hover {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.hard-mode-btn.active {
+  background: var(--accent-blue);
+  color: var(--bg-color);
+  border-color: var(--accent-blue);
+  font-weight: 700;
+}
+
+.give-up-btn {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.give-up-btn:hover {
+  opacity: 0.8;
 }
 
 /* Main content area with map and debug panel */
@@ -447,4 +520,60 @@ input::placeholder {
   border-width: 5px;
   border-style: solid;
   border-color: #3f3f46 transparent transparent transparent; /* Matches border color */
+}
+
+/* Neighbors mode sections */
+.found-section,
+.remaining-section,
+.missed-section {
+  padding: 0.75rem 0.5rem;
+  border-top: 1px solid var(--land-border);
+}
+
+.found-section h4,
+.remaining-section h4,
+.missed-section h4 {
+  margin: 0 0 0.5rem 0;
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.found-list,
+.remaining-list,
+.missed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.found-item,
+.remaining-item,
+.missed-item {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.found-item {
+  background-color: rgba(52, 211, 153, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.remaining-item {
+  background-color: rgba(251, 191, 36, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.revealed-item {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }

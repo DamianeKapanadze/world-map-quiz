@@ -9,12 +9,25 @@ interface MapData {
   land: FeatureCollection<GeometryObject, any>;
 }
 
+// 1. UPDATE INTERFACE
 interface WorldMapProps {
-  guessedCountries: { [countryName: string]: boolean };
+  // Shared
+  rawMapData?: any; // New prop from App
+  mode: 'classic' | 'neighbors'; // New prop
   validCountries: string[];
-  revealedCountries?: string[];
   focusedCountry: string | null; 
   hoveredCountry: string | null; 
+  
+  // Classic Mode Props
+  guessedCountries?: { [countryName: string]: boolean };
+  revealedCountries?: string[];
+  
+  // Neighbors Mode Props
+  targetCountry?: string | null;
+  foundNeighbors?: string[];
+  isHardMode?: boolean;
+  gameStatus?: string;
+  revealedByGiveUp?: string[];
 }
 
 const TERRITORIES = new Set(['Greenland', 'Antarctica', 'French Guiana', 'Puerto Rico', 'Guam', 'Réunion', 'Martinique', 'Guadeloupe', 'Aruba', 'Curaçao', 'Saint Martin', 'Sint Maarten']);
@@ -76,11 +89,19 @@ const POSITION_ADJUSTMENTS: { [key: string]: [number, number] } = {
 };
 
 const WorldMap: React.FC<WorldMapProps> = ({ 
-  guessedCountries, 
+  rawMapData,
+  mode,
+  guessedCountries = {}, 
   validCountries, 
   revealedCountries = [],
   focusedCountry,
-  hoveredCountry
+  hoveredCountry,
+  // Neighbors props
+  targetCountry,
+  foundNeighbors = [],
+  isHardMode = false,
+  gameStatus,
+  revealedByGiveUp = []
 }) => {
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -95,7 +116,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
   const currentScaleRef = useRef<number>(0.8);
   const pathGeneratorRef = useRef<d3.GeoPath | null>(null);
 
-  // Hardcoded Tuvalu (10m geometry)
+  // Hardcoded Tuvalu (10m geometry) - KEPT AS IS
   const TUVALU_10M_GEOMETRY = {
     type: "Feature",
     id: "798",
@@ -116,23 +137,21 @@ const WorldMap: React.FC<WorldMapProps> = ({
     }
   } as any;
 
-  // 1. Data Loading (Run Once)
+  // 1. Data Processing (Updated to use rawMapData from prop)
   useEffect(() => {
-    d3.json('https://unpkg.com/world-atlas@2.0.2/countries-50m.json').then((data: any) => {
-      const countries50m = topojson.feature(data, data.objects.countries) as any;
-      const land = topojson.feature(data, data.objects.land) as any;
+    if (rawMapData) {
+      const countries50m = topojson.feature(rawMapData, rawMapData.objects.countries) as any;
+      const land = topojson.feature(rawMapData, rawMapData.objects.land) as any;
       
       const filteredFeatures = countries50m.features.filter((f: any) => f.id !== 798 && f.id !== "798");
       filteredFeatures.push(TUVALU_10M_GEOMETRY);
       countries50m.features = filteredFeatures;
       
       setMapData({ countries: countries50m, land });
-    }).catch((error: any) => {
-      console.error('Error loading map data:', error);
-    });
-  }, []);
+    }
+  }, [rawMapData]);
 
-  // 2. Handle Window Resize
+  // 2. Handle Window Resize (Kept Same)
   useEffect(() => {
     const handleResize = () => {
       setDimensions({ width: window.innerWidth, height: window.innerHeight });
@@ -141,44 +160,33 @@ const WorldMap: React.FC<WorldMapProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // 3. MAIN RENDER: Runs when mapData is loaded OR window is resized.
-  // This recreates the projection to fit the new window size exactly.
+  // 3. MAIN RENDER (Kept Same)
   useEffect(() => {
     if (!mapData || !svgRef.current) return;
-
     const { width, height } = dimensions;
     const svg = d3.select(svgRef.current);
-    
-    // Set SVG attributes directly to window size
     svg.attr('width', width).attr('height', height);
-    
-    // Clear previous draw
     svg.selectAll('*').remove();
     countryPathsRef.current.clear();
 
-    // Setup Projection based on Dynamic Dimensions
     const projection = d3.geoEquirectangular().fitSize([width, height], mapData.countries);
     projectionRef.current = projection;
     
     const pathGenerator = d3.geoPath().projection(projection);
     pathGeneratorRef.current = pathGenerator;
     
-    // Create Groups
     const g = svg.append('g');
     gRef.current = g;
     const gFixed = svg.append('g').attr('class', 'fixed-size-layer');
     gFixedRef.current = gFixed;
 
-    // Setup Zoom
     const zoom = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.7, 4000])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
         gFixed.attr('transform', event.transform);
-        
         const scale = event.transform.k;
         currentScaleRef.current = scale;
-        
         gFixed.selectAll('circle.country-dot').attr('r', 4 / scale);
         gFixed.selectAll('text.country-label')
           .attr('font-size', `${0.7 / scale}rem`)
@@ -189,11 +197,9 @@ const WorldMap: React.FC<WorldMapProps> = ({
     svg.call(zoom);
     svg.call(zoom.transform, d3.zoomIdentity.scale(0.8));
 
-    // Draw Background
     g.append('path').datum({ type: 'Sphere' }).attr('d', pathGenerator as any).attr('fill', '#202022').attr('stroke', 'none');
     g.append('path').datum(d3.geoGraticule()).attr('d', pathGenerator as any).attr('vector-effect', 'non-scaling-stroke').attr('fill', 'none').attr('stroke', '#3f3f46').attr('stroke-width', 0.5).attr('stroke-opacity', 0.7);
 
-    // Draw Countries (Geometry Only)
     g.selectAll('path.country')
       .data(mapData.countries.features)
       .enter().append('path')
@@ -208,7 +214,6 @@ const WorldMap: React.FC<WorldMapProps> = ({
         countryPathsRef.current.set(d.properties.name, this);
       });
 
-    // Draw Territories
     g.selectAll('path.territory')
       .data(mapData.land.features.filter((f: any) => TERRITORIES.has(f.properties?.name)))
       .enter().append('path')
@@ -218,36 +223,61 @@ const WorldMap: React.FC<WorldMapProps> = ({
       .attr('stroke-width', 0.5)
       .attr('vector-effect', 'non-scaling-stroke');
 
-  }, [mapData, dimensions]); // Only runs on Mount or Resize
+  }, [mapData, dimensions]);
 
 
-  // 4. GAME UPDATES: Runs when game state changes.
-  // Updates COLORS and LABELS without re-drawing geometry or resetting zoom.
+  // 4. GAME UPDATES - UPDATED FOR DUAL MODES
   useEffect(() => {
     if (!mapData || !gRef.current || !gFixedRef.current || !pathGeneratorRef.current) return;
     const pathGenerator = pathGeneratorRef.current;
 
-    // A. Update Colors
+    // A. Update Colors and Display
     countryPathsRef.current.forEach((path, countryName) => {
       const mappedName = TERRITORY_NAME_MAP[countryName] || countryName;
       let fillColor = '#d3d3d3';
+      let display = 'block';
       
-      if (!validCountries.includes(mappedName)) {
-        fillColor = '#808080';
-      } else if (revealedCountries.includes(mappedName)) {
-        fillColor = '#ef4444';
-      } else if (guessedCountries[mappedName]) {
-        fillColor = '#34D399';
+      if (mode === 'classic') {
+        if (!validCountries.includes(mappedName)) {
+          fillColor = '#808080';
+        } else if (revealedCountries.includes(mappedName)) {
+          fillColor = '#ef4444';
+        } else if (guessedCountries[mappedName]) {
+          fillColor = '#34D399';
+        }
+      } else {
+        // NEIGHBORS MODE COLORS AND VISIBILITY
+        const isTarget = mappedName === targetCountry;
+        const isNeighbor = foundNeighbors.includes(mappedName);
+        const isRevealed = revealedByGiveUp.includes(mappedName);
+        
+        // Hide all countries except target and neighbors
+        if (!isTarget && !isNeighbor && !isRevealed) {
+          display = 'none';
+        }
+        
+        if (isTarget) {
+          fillColor = '#FBBF24'; // Gold/Yellow
+        } else if (isNeighbor) {
+          fillColor = '#34D399'; // Green
+        } else if (isRevealed) {
+          fillColor = '#ef4444'; // Red for revealed by give up
+        } else {
+          fillColor = '#d3d3d3'; // Default Grey (hidden anyway)
+        }
       }
       
-      d3.select(path).attr('fill', fillColor);
+      d3.select(path).attr('fill', fillColor).style('display', display);
     });
 
-    // B. Update Dots (Position depends on projection, which is stable unless resized)
-    const dotsData = mapData.countries.features.filter((f: any) => {
-      const mappedName = TERRITORY_NAME_MAP[f.properties.name] || f.properties.name;
-      return validCountries.includes(mappedName) && !guessedCountries[mappedName];
-    });
+    // B. Update Dots (Only for Classic Mode or specific needs)
+    // We only show red dots in classic mode for missing countries
+    const dotsData = mode === 'classic' 
+      ? mapData.countries.features.filter((f: any) => {
+          const mappedName = TERRITORY_NAME_MAP[f.properties.name] || f.properties.name;
+          return validCountries.includes(mappedName) && !guessedCountries[mappedName];
+        })
+      : []; // No dots in neighbor mode to keep it clean
 
     const dots = gFixedRef.current.selectAll<SVGCircleElement, any>('circle.country-dot')
       .data(dotsData, (d: any) => d.properties.name);
@@ -272,10 +302,21 @@ const WorldMap: React.FC<WorldMapProps> = ({
         return centroid[1] + adjustment[1];
       });
 
-    // C. Update Labels (show both guessed and revealed countries)
+    // C. Update Labels
     const labelsData = mapData.countries.features.filter((f: any) => {
       const mappedName = TERRITORY_NAME_MAP[f.properties.name] || f.properties.name;
-      return guessedCountries[mappedName] || revealedCountries.includes(mappedName);
+      
+      if (mode === 'classic') {
+        return guessedCountries[mappedName] || revealedCountries.includes(mappedName);
+      } else {
+        // NEIGHBORS MODE LABELS
+        if (mappedName === targetCountry) {
+          return !isHardMode; // Hide target name in Hard Mode
+        }
+        if (foundNeighbors.includes(mappedName)) return true;
+        if (revealedByGiveUp.includes(mappedName)) return true; // Show labels for revealed neighbors
+        return false;
+      }
     });
 
     const labels = gFixedRef.current.selectAll<SVGTextElement, any>('text.country-label')
@@ -303,13 +344,25 @@ const WorldMap: React.FC<WorldMapProps> = ({
       })
       .attr('fill', (d: any) => {
         const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
-        // Red text for revealed countries, white for guessed
-        return revealedCountries.includes(mappedName) ? '#ff4444' : '#ffffff';
+        // Logic for Label Color
+        if (mode === 'classic') {
+          return revealedCountries.includes(mappedName) ? '#ff4444' : '#ffffff';
+        } else {
+          // Neighbors: Target is black on gold, others white on green, red for revealed
+          if (mappedName === targetCountry) return '#000000';
+          if (revealedByGiveUp.includes(mappedName)) return '#ef4444'; // Red for revealed
+          return '#ffffff';
+        }
       })
       .attr('stroke', (d: any) => {
         const mappedName = TERRITORY_NAME_MAP[d.properties.name] || d.properties.name;
-        // Black stroke for guessed, dark red for revealed
-        return revealedCountries.includes(mappedName) ? '#660000' : '#000000';
+        if (mode === 'classic') {
+           return revealedCountries.includes(mappedName) ? '#660000' : '#000000';
+        } else {
+           if (mappedName === targetCountry) return 'rgba(255,255,255,0.5)'; // Slight halo for target
+           if (revealedByGiveUp.includes(mappedName)) return 'rgba(0,0,0,0.3)'; // Dark outline for red text
+           return '#000000';
+        }
       })
       .attr('stroke-width', `${0.2 / currentScaleRef.current}rem`)
       .style('paint-order', 'stroke fill')
@@ -320,17 +373,37 @@ const WorldMap: React.FC<WorldMapProps> = ({
       })
       .style('text-shadow', '0 0 4px rgba(0,0,0,0.8)');
 
-  }, [guessedCountries, validCountries, revealedCountries, mapData]);
+  }, [
+    mode, 
+    guessedCountries, 
+    validCountries, 
+    revealedCountries, 
+    mapData, 
+    // Neighbors dependencies
+    targetCountry,
+    foundNeighbors,
+    isHardMode,
+    gameStatus,
+    revealedByGiveUp
+  ]);
 
 
-  // 5. Focus/Zoom Effect
+  // 5. Focus/Zoom Effect (Updated to handle Target Country in Neighbors Mode)
   useEffect(() => {
-    if (!focusedCountry || !mapData || !svgRef.current || !zoomRef.current || !projectionRef.current) return;
+    // Determine what to focus on
+    let focusTarget = focusedCountry;
+    
+    // Auto-focus on target country in neighbors mode
+    if (mode === 'neighbors' && targetCountry) {
+        focusTarget = targetCountry;
+    }
+
+    if (!focusTarget || !mapData || !svgRef.current || !zoomRef.current || !projectionRef.current) return;
 
     const feature = mapData.countries.features.find((f: any) => {
       const name = f.properties.name;
       const mappedName = TERRITORY_NAME_MAP[name] || name;
-      return mappedName === focusedCountry;
+      return mappedName === focusTarget;
     });
 
     if (!feature) return;
@@ -347,7 +420,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
       centerY = (bounds[0][1] + bounds[1][1]) / 2;
     }
     
-    const adjustment = POSITION_ADJUSTMENTS[focusedCountry] || [0, 0];
+    const adjustment = POSITION_ADJUSTMENTS[focusTarget] || [0, 0];
     centerX += adjustment[0];
     centerY += adjustment[1];
 
@@ -374,9 +447,9 @@ const WorldMap: React.FC<WorldMapProps> = ({
           .translate(width / 2 - targetScale * centerX, height / 2 - targetScale * centerY)
           .scale(targetScale)
       );
-  }, [focusedCountry, mapData, dimensions]);
+  }, [focusedCountry, targetCountry, mode, mapData, dimensions]);
 
-  // Zoom Buttons
+  // ... (Keep Zoom Buttons and Hover Effect identical) ...
   const handleZoomIn = () => {
     if (!svgRef.current || !zoomRef.current) return;
     d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.scaleBy, 1.5);
@@ -390,7 +463,6 @@ const WorldMap: React.FC<WorldMapProps> = ({
     d3.select(svgRef.current).transition().duration(300).call(zoomRef.current.transform, d3.zoomIdentity.scale(0.8));
   };
 
-  // Hover effect
   useEffect(() => {
     d3.selectAll('.country').classed('list-hovered', false);
     if (!hoveredCountry) return;
