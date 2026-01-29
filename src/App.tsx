@@ -35,6 +35,8 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const mapDataTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showCredits, setShowCredits] = useState(false);
+  const creditsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // List of all valid countries (197 countries)
   const allCountries = [
@@ -421,13 +423,65 @@ function App() {
           )}
         </div>
 
-        <div className="credits-wrapper">
-          {/* ... Credits (Kept same as original) ... */}
-           <button 
+        <div 
+          className="credits-wrapper"
+          onMouseEnter={() => {
+            if (creditsTimeoutRef.current) {
+              clearTimeout(creditsTimeoutRef.current);
+            }
+            setShowCredits(true);
+          }}
+          onMouseLeave={() => {
+            creditsTimeoutRef.current = setTimeout(() => {
+              setShowCredits(false);
+            }, 300);
+          }}
+        >
+          <button 
             className="credits-toggle"
+            title="View credits"
           >
             Credits
           </button>
+          {showCredits && (
+            <div className="credits-content">
+              <p className="credits-section">
+                <strong>Inspiration:</strong>
+                <a href="https://travle.earth/" target="_blank" rel="noopener noreferrer">Travle.earth</a>
+                <a href="https://www.sporcle.com/games/g/world" target="_blank" rel="noopener noreferrer">Sporcle World Geography</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Tutorials:</strong>
+                <a href="https://www.youtube.com/watch?v=9ZB1EgaJnBU" target="_blank" rel="noopener noreferrer">Curran Kelleher - D3.js</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Built with:</strong>
+                <a href="https://d3js.org" target="_blank" rel="noopener noreferrer">D3.js</a>
+                <a href="https://react.dev" target="_blank" rel="noopener noreferrer">React</a>
+                <a href="https://vitejs.dev" target="_blank" rel="noopener noreferrer">Vite</a>
+                <a href="https://github.com/topojson/world-atlas" target="_blank" rel="noopener noreferrer">world-atlas</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>AI Assistance:</strong>
+                Gemini • GitHub Copilot
+              </p>
+              
+              <p className="credits-section">
+                <strong>Creator:</strong>
+                Damiane Kapanadze
+                <a href="https://lowinertia.com/portfolio/damiane" target="_blank" rel="noopener noreferrer">Portfolio</a>
+                <a href="https://www.linkedin.com/in/damianekapanadze/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              </p>
+              
+              <p className="credits-section">
+                <strong>Source Code:</strong>
+                <a href="https://github.com/DamianeKapanadze/world-map-quiz" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
